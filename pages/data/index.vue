@@ -86,7 +86,7 @@
               :lg="4"
             >
               <div class="dataset-filters table-wrap">
-                <h2>Refine datasets by:</h2>
+                <h2>Filter datasets by:</h2>
                 <h3>Status</h3>
                 <div class="dataset-filters__filter-group">
                   <el-checkbox-group
