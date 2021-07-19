@@ -149,6 +149,7 @@
 </template>
 
 <script>
+import { request } from 'http'
 import {
   assocPath,
   clone,
@@ -193,7 +194,8 @@ const searchTypes = [
     label: 'Datasets',
     type: 'dataset',
     filterId: process.env.ctf_filters_dataset_id,
-    dataSource: 'algolia'
+    // dataSource: 'algolia'
+    dataSource: 'aqua'
   },
   {
     label: 'Organs',
@@ -494,7 +496,8 @@ export default {
 
       const searchSources = {
         contentful: this.fetchFromContentful,
-        algolia: this.fetchFromAlgolia
+        algolia: this.fetchFromAlgolia,
+        aqua: this.fetchFromAqua
       }
 
       if (typeof searchSources[source] === 'function') {
@@ -532,7 +535,7 @@ export default {
           ? ''
           : embargoedFilter + ' AND '
       }organizationName:"${organizationNameFilter}"`
-      
+
       algoliaPennseiveIndex
         .search(query, {
           hitsPerPage: this.searchData.limit,
@@ -547,6 +550,8 @@ export default {
           this.searchData = mergeLeft(searchData, this.searchData)
         })
         .finally(() => {
+          // console.log(`fromAlgolia: ${this.searchData}`)
+          // console.dir(this.searchData)
           this.fetchItemsFromKCore()
         })
     },
@@ -570,6 +575,8 @@ export default {
           )
         })
         .finally(() => {
+          console.log(`fromKCore: ${this.searchData}`)
+          console.dir(this.searchData)
           this.isLoadingSearch = false
         })
     },
@@ -617,8 +624,33 @@ export default {
           this.searchData = clone(searchData)
         })
         .finally(() => {
+          console.log(`fromContentful: ${this.searchData}`)
+          console.dir(this.searchData)
           this.isLoadingSearch = false
         })
+    },
+
+    // fetch from AQUA
+    fetchFromAqua: function() {
+      this.isLoadingSearch = true
+      this.searchData.limit = 10
+      this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
+      "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
+      {"id":12345, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
+      "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'}]
+      this.searchData.total = 2
+      // var doiss = this.searchData.items.map(
+      //   item => `item.docid:"DOI:${item.doi}"`
+      // )
+      // this.searchData.kCoreItems = doiss
+      // console.log(doiss)
+      // response.hits.map(hit =>
+      //   this.searchData.kCoreItems.set(
+      //     hit.item.docid.replace('DOI:', ''),
+      //     hit
+      //   )
+      // )
+      this.isLoadingSearch = false
     },
 
     /**
