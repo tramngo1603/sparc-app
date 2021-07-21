@@ -34,6 +34,12 @@
           @search="submitSearch"
           @clear="clearSearch"
         />
+        <subscribe-form
+          v-model="searchQuery"
+          :q="q"
+          @search="submitSearch"
+          @clear="clearSearch"
+        />
       </div>
     </div>
     <div class="page-wrap container">
@@ -170,6 +176,7 @@ import PageHero from '@/components/PageHero/PageHero.vue'
 import PaginationMenu from '@/components/Pagination/PaginationMenu.vue'
 import SearchFilters from '@/components/SearchFilters/SearchFilters.vue'
 import SearchForm from '@/components/SearchForm/SearchForm.vue'
+import SubscribeForm from '@/components/SubscribeForm/SubscribeForm.vue'
 
 const ProjectSearchResults = () =>
   import('@/components/SearchResults/ProjectSearchResults.vue')
@@ -259,7 +266,8 @@ export default {
     PageHero,
     SearchFilters,
     SearchForm,
-    PaginationMenu
+    PaginationMenu,
+    SubscribeForm
   },
 
   mixins: [],
