@@ -76,10 +76,10 @@
             <!-- <div class="search-heading"> -->
             <p style="width:50%">
               Sort by
-              <select style="width:auto;border-radius: 4px;color: #8300bf;border: solid 1px #909399;height:25px;margin-left:5px;font-weight:600;padding:3px">
-                <option value="Relevance">Relevance</option>
-                <option value="Published Date">Published Date</option>
-                <option value="Alphabetical Order">Alphabetical Order</option>
+              <select @change="sortBy($event)" v-model="sortBySelect" style="width:auto;border-radius: 4px;color: #8300bf;border: solid 1px #909399;height:25px;margin-left:5px;font-weight:600;padding:3px">
+                <option value="ranking">Relevance</option>
+                <option value="date">Published Date</option>
+                <option value="alphabetical">Alphabetical Order</option>
               </select>
             </p>
             <!-- </div> -->
@@ -167,34 +167,18 @@
                 <button @click="seeMoreSection()" class="see-more-btn" id="see-more-btn">Additional filters</button>
                 <div id="additional-filters-div" style="display:none">
                 <h3 style="padding-top:10px" class="filter-headers">Keyword</h3>
-                <div class="dataset-filters__filter-group filtering-section" style="overflow-y: hidden">
-                  <input name="keywords-filter" placeholder="Enter a keyword" style="width:90%;border-radius: 4px"></input>
-                  <!-- <el-checkbox-group
-                    v-model="datasetFilters"
-                    @change="setDatasetFilter"
-                  >
-                    <el-checkbox label="keyword-1" />
-                    <el-checkbox label="keyword-2" />
-                    <el-checkbox label="keyword-3" />
-                    <el-checkbox label="keyword-4" />
-                    <el-checkbox label="keyword-6" />
-                    <el-checkbox label="keyword-5" />
-                  </el-checkbox-group> -->
+                <div class="dataset-filters__filter-group filtering-section" style="overflow-y: auto;max-height:fit-content">
+                  <input id="keywords-filter" placeholder="Type a keyword" style="width:90%;border-radius: 4px;font-size:14px;background:#fff;border: 1px solid #d5d5d5"></input>
+                  <div style="width: 100%">
+                    <button class="apply-btn">Apply</button>
+                  </div>
                 </div>
                 <h3 style="padding-top:10px" class="filter-headers">Author</h3>
-                <div class="dataset-filters__filter-group filtering-section" style="overflow-y: hidden">
-                  <input name="authors-filter" placeholder="Enter an author" style="width:90%;border-radius: 4px"></input>
-                  <!-- <el-checkbox-group
-                    v-model="datasetFilters"
-                    @change="setDatasetFilter"
-                  >
-                    <el-checkbox label="author-1" />
-                    <el-checkbox label="author-2" />
-                    <el-checkbox label="author-3" />
-                    <el-checkbox label="author-4" />
-                    <el-checkbox label="author-5" />
-                  </el-checkbox-group> -->
-                  <!-- <input label="Keywords" placeholder="Type a keyword"></input> -->
+                <div class="dataset-filters__filter-group filtering-section" style="overflow-y: auto;max-height:fit-content">
+                  <input id="authors-filter" placeholder="Enter an author" style="width:90%;border-radius: 4px;font-size:14px;background:#fff;border: 1px solid #d5d5d5"></input>
+                  <div style="width: 100%">
+                    <button class="apply-btn">Apply</button>
+                  </div>
                 </div>
                 <h3 style="padding-top:10px" class="filter-headers">Category</h3>
                 <div class="dataset-filters__filter-group filtering-section">
@@ -265,6 +249,7 @@
 
 <script>
 
+
 // import { request } from 'http'
 import {
   assocPath,
@@ -288,6 +273,8 @@ import PaginationMenu from '@/components/Pagination/PaginationMenu.vue'
 import SearchFilters from '@/components/SearchFilters/SearchFilters.vue'
 import SearchForm from '@/components/SearchForm/SearchForm.vue'
 import * as http from 'http';
+import Tagify from '@yaireo/tagify'
+import "@yaireo/tagify/dist/tagify.css"
 
 const ProjectSearchResults = () =>
   import('@/components/SearchResults/ProjectSearchResults.vue')
@@ -346,7 +333,8 @@ const searchData = {
   order: undefined,
   ascending: false,
   keywords: [],
-  authors: []
+  authors: [],
+  responseData: {}
 }
 
 const datasetFilters = ['Public']
@@ -411,7 +399,10 @@ export default {
       windowWidth: '',
       datasetFilters: [...datasetFilters],
       PublicationDatePicked: 'Any time',
-      advancedMatch: 'Any of the words'
+      advancedMatch: 'Any of the words',
+      sortBySelect: "ranking",
+      tagifyKeywords: {},
+      tagifyAuthors: {}
     }
   },
 
@@ -547,6 +538,28 @@ export default {
    * Shrink the title column width if on mobile
    */
   mounted: function() {
+
+    this.tagifyKeywords = new Tagify(document.getElementById("keywords-filter"), {
+        enforceWhitelist: true,
+        whitelist: [],
+        duplicates: false,
+        dropdown : {
+          maxItems: 5,
+          enabled   : 1,
+          closeOnSelect : true
+        }
+    })
+    this.tagifyAuthors = new Tagify(document.getElementById("authors-filter"), {
+        enforceWhitelist: true,
+        whitelist: [],
+        duplicates: false,
+        dropdown : {
+          maxItems: 5,
+          enabled   : 1,
+          closeOnSelect : true
+        }
+    })
+
     this.autocomplete(document.getElementById("myInput"), countries);
     if (!this.$route.query.type) {
       const firstTabType = compose(propOr('', 'type'), head)(searchTypes)
@@ -577,6 +590,7 @@ export default {
     window.onresize = () => this.onResize(window.innerWidth)
     }
 
+
   },
 
   methods: {
@@ -597,6 +611,8 @@ export default {
     },
 
     queryFunction(query) {
+      this.sortBySelect = "ranking"
+
       const url = `http://130.216.216.55/search?query=${query}`
 
       const req = http.get(url, res => {
@@ -611,11 +627,15 @@ export default {
           var keywordArr = parsedJSON["filters"]["keywords"]
           var authorArr = parsedJSON["filters"]["authors"]
           var itemsArr = this.returnItems(parsedJSON)
+          this.searchData.responseData = parsedJSON
           this.searchData.items = itemsArr
           this.searchData.keywords = keywordArr
           this.searchData.authors = authorArr
           this.searchData.total = itemsArr.length
-          console.dir(this.searchData)
+          this.isLoadingSearch = false
+
+          this.tagifyAuthors.settings.whitelist = Object.keys(this.searchData.authors)
+          this.tagifyKeywords.settings.whitelist = Object.keys(this.searchData.keywords)
           // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
           // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
           // {"id":12345, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
@@ -658,6 +678,27 @@ export default {
       } else {
         document.getElementById("div-advanced-search").style.display = "block"
       }
+    },
+
+    sortBy(ev) {
+      this.isLoadingSearch = true
+      this.sortItems(ev.target.value)
+    },
+
+    sortItems(keyword) {
+      if (keyword !== "alphabetical") {
+        var itemsArray = []
+        var sortObj = this.searchData.responseData.sorts
+        var datasets = this.searchData.responseData.hits
+        for (var ele of sortObj[keyword]) {
+          var object = datasets[ele]
+          itemsArray.push(object)
+        }
+        this.searchData.items = itemsArray
+      } else {
+        // sort by title alphabetically
+      }
+      this.isLoadingSearch = false
     },
 
     autocomplete(inp, arr) {
@@ -941,7 +982,7 @@ export default {
       //     hit
       //   )
       // )
-      this.isLoadingSearch = false
+      // this.isLoadingSearch = false
     },
 
     /**
@@ -1179,12 +1220,15 @@ export default {
 
 </script>
 
+<!-- <style src="../../node_modules/"></style> -->
 <style scoped lang="scss">
 @import '../../assets/_variables.scss';
+// @import '';
 
 .page-hero {
   padding-bottom: 1.3125em;
 }
+
 .search-tabs__container {
   margin-top: 2rem;
   padding-top: 0.5rem;
@@ -1344,24 +1388,9 @@ export default {
 .filter__wrap {
   padding-right: 1em;
 }
-.radio-button:after {
-  background: #ffa500
-}
-.radio-button:checked:after {
-     background-color: blueviolet;
- }
- .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
-   background-color: #0077cc !important
- }
-
- .el-col-sm-24 {
-   width: 26%
- }
- .el-col-md-18 {
-   width: 74%
- }
 
 .dataset-filters {
+
   .filter-headers {
     font-weight: 600
   }
@@ -1443,11 +1472,44 @@ export default {
     background-color: DodgerBlue;
     color: #fff;
   }
-  #myInputautocomplete-list {
-    padding: 10px;
-
+  .apply-btn {
+    cursor: pointer;
+    padding: 5px 15px;
+    width: fit-content;
+    background: #f9f2fc;
+    color: blueviolet;
+    border: 1px solid blueviolet;
+    border-radius: 3px;
+    margin: 10px auto;
+    margin-top: 15px;
   }
 }
 
+</style>
+<style lang="scss">
+  .tagify {
+    font-size: 14px !important;
+    border-radius: 3px !important;
+    padding: 0 !important
+  }
+  .tagify__input {
+    font-size: 14px !important;
+  }
+  .radio-button:after {
+    background: #ffa500
+  }
+  .radio-button:checked:after {
+       background-color: blueviolet;
+   }
+   .el-checkbox__input.is-checked .el-checkbox__inner, .el-checkbox__input.is-indeterminate .el-checkbox__inner {
+     background-color: #0077cc !important
+   }
+
+   .el-col-sm-24 {
+     width: 26%
+   }
+   .el-col-md-18 {
+     width: 74%
+   }
 
 </style>

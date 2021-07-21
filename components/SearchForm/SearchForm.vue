@@ -62,42 +62,9 @@ export default {
   width: 100%;
   // border: .05rem solid black;
   border: none;
-  box-shadow: 0px 0px 10px #d5d5d5;;
+  // box-shadow: 0px 0px 10px #d5d5d5;;
   border-radius: .2rem;
   margin: 0 .5rem;
-
-  .autocomplete-items {
-    position: absolute;
-    padding: 10px;
-    border: 1px solid #d4d4d4;
-    border-bottom: none;
-    border-top: none;
-    z-index: 99;
-    /*position the autocomplete items to be the same width as the container:*/
-    top: 100%;
-    left: 0;
-    right: 0;
-  }
-  .autocomplete-items div {
-    padding: 10px;
-    cursor: pointer;
-    background-color: #fff;
-    border-bottom: 1px solid #d4d4d4;
-  }
-  .autocomplete-items div:hover {
-    /*when hovering an item:*/
-    background-color: #e9e9e9;
-  }
-  .autocomplete-active {
-    /*when navigating through the items using the arrow keys:*/
-    background-color: DodgerBlue !important;
-    color: #ffffff;
-  }
-  .autocomplete {
-    /*the container must be positioned relative:*/
-    position: relative;
-    display: inline-block;
-  }
 }
 
 input {
@@ -162,4 +129,42 @@ input {
   padding: 10px;
 
 }
+</style>
+<style lang="scss">
+  .autocomplete-items {
+    position: absolute;
+    // padding: 10px;
+    border: 1px solid #d4d4d4;
+    border-bottom: 1px solid #e8e8e8;
+    border-top: 1px solid #e8e8e8;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: #fff;
+    margin-top: 1px;
+  }
+  .autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: none;
+    font-size: 15px;
+    height: 20px;
+  }
+  .autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: #e9e9e9;
+  }
+  .autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+  }
+  .autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+  }
 </style>
