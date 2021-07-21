@@ -1,16 +1,22 @@
 <template>
   <div class="search-form" @keyup.enter="$emit('search')">
-    <div class="input-wrap">
-      <input :value="value" placeholder="Enter search criteria" @input="$emit('input', $event.target.value)" />
-      <button v-if="q" class="btn-clear-search" @click="$emit('clear')">
-        <svg-icon
-          name="icon-clear"
-          stroke="red"
-          color="#909399 #fff"
-          height="22"
-          width="22"
-        />
-      </button>
+    <div autocomplete="off" class="input-wrap" style="margin-left: 0">
+      <!-- <form autocomplete="off" action="/action_page.php"> -->
+        <div class="autocomplete" style="width:100%;border: 1px solid #dfe1e5">
+          <input style="width:100%;height:38px" :value="value" placeholder="Type here" id="myInput" @input="$emit('input', $event.target.value)" />
+          <button v-if="q" class="btn-clear-search" @click="$emit('clear')" style="height:35px">
+            <svg-icon
+              name="icon-clear"
+              stroke="red"
+              color="#909399 #fff"
+              height="22"
+              width="22"
+            />
+          </button>
+          <!-- <input id="myIput" type="text" name="myCountry" placeholder="Country"> -->
+        </div>
+      <!-- </form> -->
+
     </div>
     <el-button class="btn-submit-search" @click="$emit('search')">
       <svg-icon
@@ -54,10 +60,46 @@ export default {
   display: flex;
   position: relative;
   width: 100%;
-  border: .05rem solid black;
+  // border: .05rem solid black;
+  border: none;
+  box-shadow: 0px 0px 10px #d5d5d5;;
   border-radius: .2rem;
   margin: 0 .5rem;
+
+  .autocomplete-items {
+    position: absolute;
+    padding: 10px;
+    border: 1px solid #d4d4d4;
+    border-bottom: none;
+    border-top: none;
+    z-index: 99;
+    /*position the autocomplete items to be the same width as the container:*/
+    top: 100%;
+    left: 0;
+    right: 0;
+  }
+  .autocomplete-items div {
+    padding: 10px;
+    cursor: pointer;
+    background-color: #fff;
+    border-bottom: 1px solid #d4d4d4;
+  }
+  .autocomplete-items div:hover {
+    /*when hovering an item:*/
+    background-color: #e9e9e9;
+  }
+  .autocomplete-active {
+    /*when navigating through the items using the arrow keys:*/
+    background-color: DodgerBlue !important;
+    color: #ffffff;
+  }
+  .autocomplete {
+    /*the container must be positioned relative:*/
+    position: relative;
+    display: inline-block;
+  }
 }
+
 input {
   background: #fff;
   border-radius: .2rem;
@@ -114,5 +156,10 @@ input {
   color: $cochlear;
   font-size: 1rem;
   font-family: $font-family;
+}
+
+#myInputautocomplete-list {
+  padding: 10px;
+
 }
 </style>

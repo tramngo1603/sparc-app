@@ -111,10 +111,12 @@ export default {
         {
           displayName: 'Anatomical Structure',
           propPath: 'anatomy.organ'
+          // propPath: 'item.anatomy[0].organ'
         },
         {
           displayName: 'Species',
           propPath: 'organisms.primary[0].species.name'
+          // propPath: 'item.organisms[0].species.name'
         },
         {
           displayName: 'Techniques',
@@ -124,10 +126,15 @@ export default {
           displayName: 'Samples',
           propPath: 'item.statistics'
         },
+        // aqua json returns firstPublishedAt instead of createdAt
         {
           displayName: 'Publication Date',
-          propPath: 'createdAt'
+          propPath: 'firstPublishedAt'
         },
+        // {
+        //   displayName: 'Publication Date',
+        //   propPath: 'createdAt'
+        // },
         {
           displayName: 'Includes',
           propPath: 'publication'
@@ -148,6 +155,7 @@ export default {
   },
 
   methods: {
+
     getPropertyValue: function(item, property) {
       if (item == undefined) {
         return undefined
