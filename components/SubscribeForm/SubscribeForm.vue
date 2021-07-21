@@ -7,7 +7,7 @@
         <svg-icon
           name="icon-clear"
           stroke="red"
-          color="#909399 #fff"
+          color="#909399 #fff" 
           height="22"
           width="22"
         />

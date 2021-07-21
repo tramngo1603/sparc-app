@@ -1,5 +1,5 @@
 <template>
-  <div class="data-page">
+  <div class="data-page"> 
     <breadcrumb :breadcrumb="breadcrumb" title="Find Data" />
     <div class="container">
       <div class="search-tabs__container">
