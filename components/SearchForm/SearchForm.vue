@@ -20,7 +20,7 @@
         dir="left"
       />
       <span>
-        Search      
+        Search
       </span>
     </el-button>
   </div>

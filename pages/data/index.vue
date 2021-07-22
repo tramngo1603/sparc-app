@@ -35,10 +35,8 @@
           @clear="clearSearch"
         />
         <subscribe-form
-          v-model="searchQuery"
-          :q="q"
-          @search="submitSearch"
-          @clear="clearSearch"
+          v-model="email"
+          @confirm="emailConfirm"
         />
       </div>
     </div>
@@ -275,6 +273,7 @@ export default {
   data: () => {
     return {
       searchQuery: '',
+      email: '',
       filters: [],
       searchTypes,
       searchData: clone(searchData),
@@ -721,8 +720,24 @@ export default {
       this.$router.replace({ query })
     },
 
+   /**
+     * Submit email
+     */
+    emailConfirm: function() {
+      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if(this.email === ""){
+        alert("Please enter your email")
+      }else if(!re.test(this.email)){
+        //check if the email address is in the right format
+        alert("Your email is not valid")
+      }else{
+        var subscribeInfo = {"email": this.email, "keywords": this.$route.query.q};
+        return subscribeInfo;
+      }
+    },
+
     /**
-     * Submit search
+     * Clear search
      */
     clearSearch: function() {
       this.searchData.skip = 0

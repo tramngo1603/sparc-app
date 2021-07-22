@@ -1,19 +1,10 @@
 <template>
-  <div class="subscribe-form" @keyup.enter="$emit('search')">
+  <div class="subscribe-form" @keyup.enter="$emit('confirm')">
     <div class="blank"></div>
     <div class="input-wrap">
       <input :value="value" placeholder="Enter your email" @input="$emit('input', $event.target.value)" />
-      <button v-if="q" class="btn-clear-search" @click="$emit('clear')">
-        <svg-icon
-          name="icon-clear"
-          stroke="red"
-          color="#909399 #fff" 
-          height="22"
-          width="22"
-        />
-      </button>
     </div>
-    <el-button class="btn-submit-search" @click="$emit('search')">
+    <el-button class="btn-submit-search" @click="$emit('confirm')">
       <svg-icon
         icon="icon-arrow"
         height="25"
@@ -21,7 +12,7 @@
         dir="left"
       />
       <span>
-        Subscribe
+        Confirm
       </span>
     </el-button>
   </div>
