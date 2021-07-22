@@ -53,7 +53,7 @@
           <tr
             v-for="(property, index) in PROPERTY_DATA"
             v-show="
-              property.propPath === 'createdAt' ||
+              property.propPath === 'firstPublishedAt' ||
                 getPropertyValue(tableMetadata.get(scope.row.doi), property)
             "
             :key="index"
@@ -63,10 +63,10 @@
             </td>
             <td>
               {{
-                property.propPath === 'createdAt'
-                  ? formatDate(scope.row.createdAt) +
+                property.propPath === 'firstPublishedAt'
+                  ? formatDate(scope.row.firstPublishedAt) +
                     ' (Last updated ' +
-                    formatDate(scope.row.updatedAt) +
+                    formatDate(scope.row.firstPublishedAt) +
                     ')'
                   : getPropertyValue(tableMetadata.get(scope.row.doi), property)
               }}
@@ -110,13 +110,14 @@ export default {
       PROPERTY_DATA: [
         {
           displayName: 'Anatomical Structure',
-          propPath: 'anatomy.organ'
+          // propPath: 'anatomy.organ'
           // propPath: 'item.anatomy[0].organ'
+          propPath: 'anatomy[0]'
         },
         {
           displayName: 'Species',
-          propPath: 'organisms.primary[0].species.name'
-          // propPath: 'item.organisms[0].species.name'
+          // propPath: 'organisms.primary[0].species.name'
+          propPath: 'item.organisms[0].species.name'
         },
         {
           displayName: 'Techniques',
@@ -124,7 +125,11 @@ export default {
         },
         {
           displayName: 'Samples',
-          propPath: 'item.statistics'
+          propPath: 'samples'
+        },
+        {
+          displayName: 'Subjects',
+          propPath: 'subjects'
         },
         // aqua json returns firstPublishedAt instead of createdAt
         {
@@ -242,4 +247,10 @@ table:not([class^='el-table__'])::before {
   width: 160px;
   font-weight: bold;
 }
+</style>
+
+<style lang="scss">
+  .mt-8.mb-8 p em {
+    font-weight: 600
+  }
 </style>

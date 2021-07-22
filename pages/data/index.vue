@@ -79,7 +79,7 @@
               <select @change="sortBy($event)" v-model="sortBySelect" style="width:auto;border-radius: 4px;color: #8300bf;border: solid 1px #909399;height:25px;margin-left:5px;font-weight:600;padding:3px">
                 <option value="ranking">Relevance</option>
                 <option value="date">Published Date</option>
-                <option value="alphabetical">Alphabetical Order</option>
+                <option value="name">Alphabetical Order</option>
               </select>
             </p>
             <!-- </div> -->
@@ -146,19 +146,19 @@
                     @change="setDatasetFilter"
                   > -->
                   <div>
-                    <input class="radio-button" type="radio" value="Any time" name="publication-date-filter" v-model="PublicationDatePicked">
+                    <input class="radio-button" @click="filterTime('all')" type="radio" value="Any time" name="publication-date-filter" v-model="PublicationDatePicked">
                     <label for="Any time">Any time</label>
                     <br>
-                    <input class="radio-button" type="radio" value="Within the last 24 hours" name="publication-date-filter" v-model="PublicationDatePicked">
-                    <label for="Within the last 24 hours">Last 24 hours</label>
-                    <br>
-                    <input class="radio-button" type="radio" value="Last week" name="publication-date-filter" v-model="PublicationDatePicked">
+                    <input class="radio-button" @click="filterTime('week')" type="radio" value="Last week" name="publication-date-filter" v-model="PublicationDatePicked">
                     <label for="Last week">Last week</label>
                     <br>
-                    <input class="radio-button" type="radio" value="Last month" name="publication-date-filter" v-model="PublicationDatePicked">
+                    <input class="radio-button" @click="filterTime('month')" type="radio" value="Last month" name="publication-date-filter" v-model="PublicationDatePicked">
                     <label for="Last month">Last month</label>
                     <br>
-                    <input class="radio-button" type="radio" value="Older" name="publication-date-filter" v-model="PublicationDatePicked">
+                    <input class="radio-button" @click="filterTime('year')" type="radio" value="Last year" name="publication-date-filter" v-model="PublicationDatePicked">
+                    <label for="Last year">Last year</label>
+                    <br>
+                    <input class="radio-button" @click="filterTime('older')" type="radio" value="Older" name="publication-date-filter" v-model="PublicationDatePicked">
                     <label for="Older">Older</label>
                   </div>
                   <!-- </el-checkbox-group> -->
@@ -170,27 +170,27 @@
                 <div class="dataset-filters__filter-group filtering-section" style="overflow-y: auto;max-height:fit-content">
                   <input id="keywords-filter" placeholder="Type a keyword" style="width:90%;border-radius: 4px;font-size:14px;background:#fff;border: 1px solid #d5d5d5"></input>
                   <div style="width: 100%">
-                    <button class="apply-btn">Apply</button>
+                    <button class="apply-btn" @click="applyFilter('keywords')">Apply</button>
                   </div>
                 </div>
                 <h3 style="padding-top:10px" class="filter-headers">Author</h3>
                 <div class="dataset-filters__filter-group filtering-section" style="overflow-y: auto;max-height:fit-content">
                   <input id="authors-filter" placeholder="Enter an author" style="width:90%;border-radius: 4px;font-size:14px;background:#fff;border: 1px solid #d5d5d5"></input>
                   <div style="width: 100%">
-                    <button class="apply-btn">Apply</button>
+                    <button class="apply-btn" @click="applyFilter('authors')">Apply</button>
                   </div>
                 </div>
-                <h3 style="padding-top:10px" class="filter-headers">Category</h3>
+                <!-- <h3 style="padding-top:10px" class="filter-headers">Category</h3>
                 <div class="dataset-filters__filter-group filtering-section">
                   <el-checkbox-group
-                    v-model="datasetFilters"
-                    @change="setDatasetFilter"
+                    v-model="category"
+                    @change=""
                   >
                     <el-checkbox label="category-1" />
                     <el-checkbox label="category-2" />
                     <el-checkbox label="category-3" />
                   </el-checkbox-group>
-                </div>
+                </div> -->
                 <div>
                   <button @click="seeLessSection()" class="see-more-btn" id="see-less-btn" style="margin-top:20px">See less</button>
                   <button @click="resetFilters()" class="see-more-btn" id="reset-filters-btn" style="background: #8300BF;color:#fff;margin-top:0">Reset filters</button>
@@ -198,6 +198,9 @@
               </div>
               </div>
             </el-col>
+            <div style="display: none" id="did-you-mean-div">
+              <p>Did you mean <span @click="this.queryFunction($event.target.innerHTML)" class="did-you-mean-span" id="did-you-mean-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
+            </div>
             <el-col
               :sm="searchColSpan('sm')"
               :md="searchColSpan('md')"
@@ -267,6 +270,8 @@ import {
   propOr,
   pluck
 } from 'ramda'
+// import Vue from 'vue'
+// import VueRouter from 'vue-router'
 import Breadcrumb from '@/components/Breadcrumb/Breadcrumb.vue'
 import PageHero from '@/components/PageHero/PageHero.vue'
 import PaginationMenu from '@/components/Pagination/PaginationMenu.vue'
@@ -293,7 +298,7 @@ const searchResultsComponents = {
   simulation: DatasetSearchResults
 }
 
-const countries = ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia"]
+// const countries = ["Afghanistan","Albania","Algeria","Andorra","Angola","Anguilla","Antigua &amp; Barbuda","Argentina","Armenia","Aruba","Australia","Austria","Azerbaijan","Bahamas","Bahrain","Bangladesh","Barbados","Belarus","Belgium","Belize","Benin","Bermuda","Bhutan","Bolivia"]
 
 const searchTypes = [
   {
@@ -334,7 +339,8 @@ const searchData = {
   ascending: false,
   keywords: [],
   authors: [],
-  responseData: {}
+  responseData: {},
+  suggestions: []
 }
 
 const datasetFilters = ['Public']
@@ -363,6 +369,12 @@ const client = createClient()
 const algoliaClient = createAlgoliaClient()
 const algoliaPennseiveIndex = algoliaClient.initIndex('PENNSIEVE_DISCOVER')
 const algoliaKCoreIndex = algoliaClient.initIndex('UCSD K-Core')
+
+// Vue.use(VueRouter)
+
+// export default getSuggestedWords
+
+// export function
 
 export default {
   name: 'DataPage',
@@ -402,7 +414,9 @@ export default {
       advancedMatch: 'Any of the words',
       sortBySelect: "ranking",
       tagifyKeywords: {},
-      tagifyAuthors: {}
+      tagifyAuthors: {},
+      autocompleteURL: ""
+      // suggestions: []
     }
   },
 
@@ -539,6 +553,28 @@ export default {
    */
   mounted: function() {
 
+    document.getElementById("myInput").addEventListener('input', () => {
+      if (document.getElementById("myInput").value.length > 3) {
+        this.getSuggestedWords(document.getElementById("myInput").value)
+      }
+    })
+
+    // const router = new VueRouter({})
+    //
+    // const originalPush = router.push
+    // router.push = function push(location, onResolve, onReject)
+    // {
+    //     if (onResolve || onReject) {
+    //         return originalPush.call(this, location, onResolve, onReject)
+    //     }
+    //     return originalPush.call(this, location).catch((err) => {
+    //         if (VueRouter.isNavigationFailure(err)) {
+    //             return err
+    //         }
+    //         return Promise.reject(err)
+    //     })
+    // }
+
     this.tagifyKeywords = new Tagify(document.getElementById("keywords-filter"), {
         enforceWhitelist: true,
         whitelist: [],
@@ -560,7 +596,7 @@ export default {
         }
     })
 
-    this.autocomplete(document.getElementById("myInput"), countries);
+    // this.autocomplete(document.getElementById("myInput"), this.searchData.suggestions);
     if (!this.$route.query.type) {
       const firstTabType = compose(propOr('', 'type'), head)(searchTypes)
 
@@ -590,6 +626,9 @@ export default {
     window.onresize = () => this.onResize(window.innerWidth)
     }
 
+    // document.getElementById("myInput").addEventListener("keyup", function(e) {
+    //   getSuggestedWords(document.getElementById("myInput").value)
+    // })
 
   },
 
@@ -610,43 +649,86 @@ export default {
       this.fetchResults()
     },
 
-    queryFunction(query) {
-      this.sortBySelect = "ranking"
+    getSuggestedWords(query) {
+      // const axiosRequest = this.$axios.CancelToken.source();
+      // this.$axios.get(this.autocompleteURL, { cancelToken: axiosRequest.token })
+      // axiosRequest.cancel();
 
-      const url = `http://130.216.216.55/search?query=${query}`
-
-      const req = http.get(url, res => {
-
+      this.autocompleteURL = `http://130.216.216.55/autocomplete?query=${query}`
+      const req = http.get(this.autocompleteURL, res => {
         let data = "";
         res.setEncoding('utf8');
         res.on("data", d => {
           data += d
         })
         res.on("end", () => {
-          var parsedJSON = JSON.parse(data)
-          var keywordArr = parsedJSON["filters"]["keywords"]
-          var authorArr = parsedJSON["filters"]["authors"]
-          var itemsArr = this.returnItems(parsedJSON)
-          this.searchData.responseData = parsedJSON
-          this.searchData.items = itemsArr
-          this.searchData.keywords = keywordArr
-          this.searchData.authors = authorArr
-          this.searchData.total = itemsArr.length
-          this.isLoadingSearch = false
-
-          this.tagifyAuthors.settings.whitelist = Object.keys(this.searchData.authors)
-          this.tagifyKeywords.settings.whitelist = Object.keys(this.searchData.keywords)
-          // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
-          // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
-          // {"id":12345, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
-          // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'}]
+          var suggestionArr = JSON.parse(data)
+          console.log(suggestionArr)
+          // var suggestionArr = parsedJSON
+          // this.searchData.suggestions = suggestionArr
+          this.autocomplete(document.getElementById("myInput"), suggestionArr)
         })
       })
+    },
 
-      req.on('error', error => {
-        console.error(error)
-      })
-      req.end()
+    queryFunction(query) {
+      console.log(query)
+      if (query !== undefined) {
+        this.isLoadingSearch = true
+        var url = `http://130.216.216.55/search?query=${query}&force=yes`
+        this.sortBySelect = "ranking"
+        // console.log(this.advancedMatch)
+        if (this.advancedMatch === "Exact match") {
+          url = `http://130.216.216.55/search?query=${query}&force=yes&match=true`
+        }
+        const req = http.get(url, res => {
+          let data = "";
+          res.setEncoding('utf8');
+          res.on("data", d => {
+            data += d
+          })
+          res.on("end", () => {
+            var parsedJSON = JSON.parse(data)
+            if (Object.keys(parsedJSON.hits).length === 0) {
+              if (parsedJSON["suggestions"][0]) {
+                document.getElementById("did-you-mean-div").style.display = "block"
+                document.getElementById("did-you-mean-span").textContent = parsedJSON["suggestions"][0]
+                var itemsArr = this.returnItems(parsedJSON)
+                this.searchData.items = itemsArr
+                this.isLoadingSearch = false
+              }
+            } else {
+              var keywordArr = parsedJSON["filters"]["keywords"]
+              var authorArr = parsedJSON["filters"]["authors"]
+              var itemsArr = this.returnItems(parsedJSON)
+              var suggestionArr = parsedJSON["suggestions"]
+              this.searchData.responseData = parsedJSON
+              this.searchData.suggestions = suggestionArr
+              this.highlightProcess(itemsArr)
+              this.searchData.keywords = keywordArr
+              this.searchData.authors = authorArr
+              this.searchData.total = itemsArr.length
+              this.isLoadingSearch = false
+
+              if (this.tagifyAuthors.settings) {
+                this.tagifyAuthors.settings.whitelist = Object.keys(this.searchData.authors)
+              }
+              if (this.tagifyKeywords.settings) {
+                this.tagifyKeywords.settings.whitelist = Object.keys(this.searchData.keywords)
+              }
+            }
+            // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
+            // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
+            // {"id":12345, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
+            // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'}]
+          })
+        })
+
+        req.on('error', error => {
+          console.error(error)
+        })
+        req.end()
+      }
     },
 
     returnItems(parsedJson) {
@@ -656,6 +738,52 @@ export default {
         itemsArray.push(object)
       }
       return itemsArray
+    },
+
+    applyFilter(type) {
+      // this.isLoadingSearch = true
+      var tagigy;
+      var values = [];
+      var datasetNoArr = [];
+      var sortObj = this.searchData.responseData.filters
+      var datasets = this.searchData.responseData.hits
+      var parsedJSON = this.searchData.responseData
+
+      if (type === "keywords") {
+        tagigy = this.tagifyKeywords
+      } else {
+        tagigy = this.tagifyAuthors
+      }
+      values = this.grabTagifyValues(tagigy)
+      for (var val of values) {
+        datasetNoArr.push(...sortObj[type][val])
+      }
+      var mySet = new Set(datasetNoArr)
+      var processedDatasetNoArr = [...mySet]
+      var itemsArray = []
+      for (var rank of parsedJSON["sorts"]["ranking"]) {
+        if (processedDatasetNoArr.includes(rank)) {
+          var object = datasets[rank];
+          itemsArray.push(object)
+        }
+      }
+      this.searchData.items = itemsArray
+      // this.isLoadingSearch = false
+    },
+
+    grabTagifyValues(tag) {
+      var infoArray = []
+      // var element = document.getElementById(id)
+      var values = tag.DOM.originalInput.value;
+      if (values !== ""){
+        var valuesArray = JSON.parse(values);
+        if (valuesArray.length > 0) {
+          for (var val of valuesArray) {
+            infoArray.push(val.value);
+          }
+        }
+      }
+      return infoArray
     },
 
     seeMoreSection() {
@@ -669,7 +797,41 @@ export default {
     },
 
     resetFilters() {
+        // this.isLoadingSearch = true
+        // $('input:checkbox').attr('checked',false);
+        this.PublicationDatePicked = 'Any time'
+        this.sortBySelect = "ranking"
+        this.datasetFilters = "Public"
+        this.tagifyKeywords.removeAllTags()
+        this.tagifyAuthors.removeAllTags()
+        this.datasetFilters = ['Public']
+        this.queryFunction(this.$route.query.q)
 
+    },
+
+    highlightProcess(itemsArray) {
+      // const processedItemsArray = []
+      for (var item of itemsArray) {
+        if (Object.keys(item).includes("highlight")) {
+          if (Object.keys(item["highlight"]).includes("name")) {
+            var name = item["highlight"]["name"][0]
+            // var htmlObject = document.createElement('p');
+            // htmlObject.innerHTML = name;
+            item.name = name
+            // document.getElementById("row-name").append(htmlObject)
+          }
+          if (Object.keys(item["highlight"]).includes("description")) {
+            var desc = item["highlight"]["description"][0]
+            // var htmlObject = document.createElement('p');
+            // htmlObject.innerHTML = desc;
+            // item.desc = htmlObject
+            item.description = desc
+            // document.getElementById("row-description").append(htmlObject)
+          }
+        }
+      }
+      this.searchData.items = itemsArray
+      // return itemsArray
     },
 
     showAdvancedSearch() {
@@ -683,28 +845,78 @@ export default {
     sortBy(ev) {
       this.isLoadingSearch = true
       this.sortItems(ev.target.value)
+      console.log(ev.target.value)
     },
 
     sortItems(keyword) {
-      if (keyword !== "alphabetical") {
-        var itemsArray = []
-        var sortObj = this.searchData.responseData.sorts
-        var datasets = this.searchData.responseData.hits
-        for (var ele of sortObj[keyword]) {
-          var object = datasets[ele]
-          itemsArray.push(object)
-        }
-        this.searchData.items = itemsArray
-      } else {
-        // sort by title alphabetically
+      var itemsArray = []
+      var sortObj = this.searchData.responseData.sorts
+      var datasets = this.searchData.responseData.hits
+      for (var ele of sortObj[keyword]) {
+        var object = datasets[ele]
+        itemsArray.push(object)
       }
+      this.searchData.items = itemsArray
       this.isLoadingSearch = false
     },
 
+    filterTime(type) {
+      var itemsArr = []
+      if (type !== "all") {
+        // console.log()
+        for (const ele in this.searchData.responseData.hits) {
+          var publishedDate = this.searchData.responseData.hits[ele]["firstPublishedAt"]
+          var boolean = this.olderThanCriteria(type, publishedDate)
+          if (boolean) {
+            itemsArr.push(ele)
+          }
+        }
+        this.searchData.items = itemsArr
+      } else {
+        this.restoreAllDatasets()
+      }
+    },
+
+    restoreAllDatasets() {
+      var itemsArray = []
+      var datasets = this.searchData.responseData.hits
+      var parsedJSON = this.searchData.responseData
+      for (var rank of parsedJSON["sorts"]["ranking"]) {
+        var object = datasets[rank];
+        itemsArray.push(object)
+      }
+      this.searchData.items = itemsArray
+    },
+
+    olderThanCriteria(criterion, isoFormatDate) {
+      const date = Date.parse(isoFormatDate)
+      const now = Date.now()
+      const elapsedTime = now - date
+      const yearInMilliseconds = 1000 * 60 * 60 * 24 * 365
+      if (criterion === "older") {
+        if (elapsedTime > yearInMilliseconds) {
+          return true
+        }
+      }
+
+      let oneCriteriaMilliseconds = 0
+      if (criterion === "week") {
+        oneCriteriaMilliseconds = 1000 * 60 * 60 * 24 * 7
+      } else if (criterion === "month") {
+        oneCriteriaMilliseconds = 1000 * 60 * 60 * 24 * 30
+      } else if (criterion === "year") {
+        oneCriteriaMilliseconds = yearInMilliseconds
+      }
+      if (elapsedTime < oneCriteriaMilliseconds) {
+        return true
+      }
+      return false
+    },
+
     autocomplete(inp, arr) {
-      /*the autocomplete function takes two arguments,
-      the text field element and an array of possible autocompleted values:*/
       var currentFocus;
+      // var suggestedArr = this.queryFunction(this.$route.query.q)
+      // var arr = suggestedArr
       /*execute a function when someone writes in the text field:*/
       inp.addEventListener("input", function(e) {
           var a, b, i, val = this.value;
@@ -742,7 +954,8 @@ export default {
           }
       });
       /*execute a function presses a key on the keyboard:*/
-      inp.addEventListener("keydown", function(e) {
+      inp.addEventListener("keyup", function(e) {
+          // this.queryFunction(this.$route.query.q)
           var x = document.getElementById(this.id + "autocomplete-list");
           if (x) x = x.getElementsByTagName("div");
           if (e.keyCode == 40) {
@@ -906,7 +1119,6 @@ export default {
           )
         })
         .finally(() => {
-          console.log(`fromKCore: ${this.searchData}`)
           console.dir(this.searchData)
           this.isLoadingSearch = false
         })
@@ -963,7 +1175,7 @@ export default {
 
     // fetch from AQUA
     fetchFromAqua: function() {
-      this.isLoadingSearch = true
+      // this.isLoadingSearch = true
       this.searchData.limit = 10
       this.queryFunction(this.$route.query.q)
 
@@ -1072,7 +1284,6 @@ export default {
      */
     submitSearch: function() {
       this.searchData.skip = 0
-
       const query = mergeLeft({ q: this.searchQuery }, this.$route.query)
       this.$router.replace({ query })
     },
@@ -1390,7 +1601,6 @@ export default {
 }
 
 .dataset-filters {
-
   .filter-headers {
     font-weight: 600
   }
@@ -1510,6 +1720,9 @@ export default {
    }
    .el-col-md-18 {
      width: 74%
+   }
+   .did-you-mean-span:hover {
+     text-decoration: underline;
    }
 
 </style>
