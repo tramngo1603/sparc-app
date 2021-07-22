@@ -1,5 +1,5 @@
 <template>
-  <div class="data-page">
+  <div class="data-page"> 
     <breadcrumb :breadcrumb="breadcrumb" title="Find Data" />
     <div class="container">
       <div class="search-tabs__container">
@@ -33,6 +33,10 @@
           :q="q"
           @search="submitSearch"
           @clear="clearSearch"
+        />
+        <subscribe-form
+          v-model="email"
+          @confirm="emailConfirm"
         />
       </div>
     </div>
@@ -170,6 +174,7 @@ import PageHero from '@/components/PageHero/PageHero.vue'
 import PaginationMenu from '@/components/Pagination/PaginationMenu.vue'
 import SearchFilters from '@/components/SearchFilters/SearchFilters.vue'
 import SearchForm from '@/components/SearchForm/SearchForm.vue'
+import SubscribeForm from '@/components/SubscribeForm/SubscribeForm.vue'
 
 const ProjectSearchResults = () =>
   import('@/components/SearchResults/ProjectSearchResults.vue')
@@ -259,7 +264,8 @@ export default {
     PageHero,
     SearchFilters,
     SearchForm,
-    PaginationMenu
+    PaginationMenu,
+    SubscribeForm
   },
 
   mixins: [],
@@ -267,6 +273,7 @@ export default {
   data: () => {
     return {
       searchQuery: '',
+      email: '',
       filters: [],
       searchTypes,
       searchData: clone(searchData),
@@ -713,8 +720,24 @@ export default {
       this.$router.replace({ query })
     },
 
+   /**
+     * Submit email
+     */
+    emailConfirm: function() {
+      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if(this.email === ""){
+        alert("Please enter your email")
+      }else if(!re.test(this.email)){
+        //check if the email address is in the right format
+        alert("Your email is not valid")
+      }else{
+        var subscribeInfo = {"email": this.email, "keywords": this.$route.query.q};
+        return subscribeInfo;
+      }
+    },
+
     /**
-     * Submit search
+     * Clear search
      */
     clearSearch: function() {
       this.searchData.skip = 0

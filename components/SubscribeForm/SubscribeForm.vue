@@ -1,26 +1,18 @@
 <template>
-  <div class="search-form" @keyup.enter="$emit('search')">
+  <div class="subscribe-form" @keyup.enter="$emit('confirm')">
+    <div class="blank"></div>
     <div class="input-wrap">
-      <input :value="value" placeholder="Enter search criteria" @input="$emit('input', $event.target.value)" />
-      <button v-if="q" class="btn-clear-search" @click="$emit('clear')">
-        <svg-icon
-          name="icon-clear"
-          stroke="red"
-          color="#909399 #fff"
-          height="22" 
-          width="22"
-        />
-      </button>
+      <input :value="value" placeholder="Enter your email" @input="$emit('input', $event.target.value)" />
     </div>
-    <el-button class="btn-submit-search" @click="$emit('search')">
+    <el-button class="btn-submit-search" @click="$emit('confirm')">
       <svg-icon
-        icon="icon-magnifying-glass"
+        icon="icon-arrow"
         height="25"
-        width="25"
+        width="20"
         dir="left"
       />
       <span>
-        Search
+        Confirm
       </span>
     </el-button>
   </div>
@@ -28,7 +20,7 @@
 
 <script>
 export default {
-  name: 'SearchForm',
+  name: 'SubscribeForm',
 
   props: {
     value: {
@@ -46,17 +38,21 @@ export default {
 <style lang="scss" scoped>
 @import '../../assets/_variables.scss';
 
-.search-form {
+.subscribe-form {
+  margin-top: 7px;
   display: flex;
   width: 100%;
 }
+.blank{
+  width:30cm
+}
 .input-wrap {
   display: flex;
-  position: relative;
-  width: 100%;
+  position: right;
+  width: 20%;
   border: .05rem solid black;
   border-radius: .2rem;
-  margin: 0 .5rem;
+  margin: 0 .9rem;
 }
 input {
   background: #fff;
@@ -97,6 +93,7 @@ input {
   border: 1px solid $median;
   border-radius: 4px;
   cursor: pointer;
+  width: 7.5rem;
   height: 2.5rem;
   padding: 0 1.5rem;
   @media screen and (max-width: 28rem) {
