@@ -7,6 +7,14 @@
   >
     <el-table-column prop="banner" label="Image" width="160">
       <template slot-scope="scope">
+        <!-- <div>
+          <svg-icon
+            icon="icon-shared-linked"
+            height="25"
+            width="20"
+            dir="left"
+          />
+        </div> -->
         <nuxt-link
           :to="{
             name: 'datasets-datasetId',
@@ -17,6 +25,7 @@
           }"
           class="img-dataset"
         >
+
           <img
             :src="scope.row.banner"
             :alt="`Banner for ${scope.row.name}`"
@@ -43,10 +52,10 @@
               type: $route.query.type
             }
           }"
-        >
+        v-html="scope.row.name">
           {{ scope.row.name }}
         </nuxt-link>
-        <div class="mt-8 mb-8">
+        <div class="mt-8 mb-8" v-html="scope.row.description" style="color:#484848">
           {{ scope.row.description }}
         </div>
         <table class="property-table">
@@ -77,6 +86,7 @@
     </el-table-column>
   </el-table>
 </template>
+
 
 <script>
 import SparcPill from '@/components/SparcPill/SparcPill.vue'
@@ -250,7 +260,14 @@ table:not([class^='el-table__'])::before {
 </style>
 
 <style lang="scss">
-  .mt-8.mb-8 p em {
-    font-weight: 600
+  div em {
+    font-weight: 900;
+    font-style: normal;
+    color: black
+  }
+  .cell em {
+    color: inherit;
+    font-style: normal;
+    font-weight: 900;
   }
 </style>

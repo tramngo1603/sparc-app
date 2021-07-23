@@ -2895,9 +2895,9 @@
     lodash "^4.17.21"
     lru-cache "^5.1.1"
     ufo "^0.7.4"
-    vue "^2.6.12"
+    vue "2.6.12"
     vue-meta "^2.4.0"
-    vue-server-renderer "^2.6.12"
+    vue-server-renderer "2.6.12"
 
 "@nuxt/webpack@2.15.7":
   version "2.15.7"

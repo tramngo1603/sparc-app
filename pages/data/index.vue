@@ -37,44 +37,58 @@
         />
         <div style="display: flex;flex-direction:row">
           <div style="position:relative;display:flex;flex-direction:row;justify-content:flex-end;margin-right:15px">
-            <p @click="showAdvancedSearch()" style="margin-top:10px;margin-bottom:5px;margin-right:5px;padding-right:10px;color: blueviolet;cursor:pointer;font-size:15px">Advanced search</p>
+            <p @click="showAdvancedSearch()" style="margin-top:10px;margin-bottom:5px;margin-right:5px;padding-right:10px;color: blueviolet;cursor:pointer;font-size:15px" id="show-advanced-search-span">Advanced search</p>
             <span @click="showAdvancedSearch()" class="arrow-span"></span>
           </div>
           <div style="margin-top:-3px">
-          <!-- <div class="div-pipe" style="width: 1px;height:18px;background: blueviolet;margin-top:15px"></div> -->
-            <p @click="" style="margin-top:10px;margin-left: 5px;margin-bottom:5px;color: blueviolet;cursor:pointer;padding: 3px;font-size:15px">Create alerts</p>
+            <p @click="showAlert()" style="margin-top:10px;margin-left: 5px;margin-bottom:5px;color: blueviolet;cursor:pointer;padding: 3px;font-size:15px" id="create-alerts-span">Create alerts</p>
           </div>
         </div>
-        <div class="div-advanced-search" id="div-advanced-search" style="font-size:14px;display:none;margin-top: -10px;width:135px;padding:5px;background:#f9f2fc;border-radius:3px;border:1px solid blueviolet">
+        <div id="div-advanced-search" style="font-size:14px;display:none;margin-top: -10px;width:135px;padding:5px;background:#f9f2fc;border-radius:3px;border:1px solid blueviolet">
           <input class="radio-button" type="radio" value="Exact match" name="advanced-match" v-model="advancedMatch">
           <label for="Exact match">Exact match</label>
           <br>
           <input class="radio-button" type="radio" value="Any of the words" name="advanced-match" v-model="advancedMatch">
           <label for="Any of the words">Any of the words</label>
         </div>
-        <!-- <form autocomplete="off" action="/action_page.php">
-          <div class="autocomplete" style="width:300px;">
-            <input id="myInput" type="text" name="myCountry" placeholder="Country">
-          </div>
-          <input type="submit">
-        </form> -->
+
+        <div id="div-create-alerts" style="font-size:14px;display:none;margin-top: -10px;width:350px;padding:5px;border-radius:3px;border:none;margin-left:130px">
+          <!-- Alert me with new datasets related to the search query above: -->
+
+          <subscribe-form
+            v-model="email"
+            @confirm="emailConfirm"
+          />
+        </div>
+
+
       </div>
     </div>
     <div class="page-wrap container">
       <el-row :gutter="32" type="flex">
 
         <el-col :span="24">
+          <div style="display:flex">
+            <p style="width:50%;margin-bottom:0;margin-top:20px;" v-show="!isLoadingSearch && this.searchData.total"> Showing
+              {{ searchHeading }}
+            </p>
+          <p style="width:20%">
+          </p>
+
+          <p style="width:38%">
+          </p>
+        </div>
           <div class="search-heading">
             <!-- <p v-show="!isLoadingSearch && searchData.items.length"> -->
-            <p style="width:26%" v-show="!isLoadingSearch && this.searchData.items.length">
-              {{ searchHeading }} | Showing
+            <p style="width:24%;"> Showing
               <pagination-menu
                 :page-size="searchData.limit"
                 @update-page-size="updateDataSearchLimit"
               />
             </p>
             <!-- <div class="search-heading"> -->
-            <p style="width:50%">
+
+            <p style="width:33%;">
               Sort by
               <select @change="sortBy($event)" v-model="sortBySelect" style="width:auto;border-radius: 4px;color: #8300bf;border: solid 1px #909399;height:25px;margin-left:5px;font-weight:600;padding:3px">
                 <option value="ranking">Relevance</option>
@@ -82,8 +96,16 @@
                 <option value="name">Alphabetical Order</option>
               </select>
             </p>
+            <p style="width:38%;text-align:right">
+              View as
+              <select @change="sortBy($event)" v-model="sortBySelect" style="width:auto;border-radius: 4px;color: #8300bf;border: solid 1px #909399;height:25px;margin-left:5px;font-weight:600;padding:3px">
+                <option value="ranking">List</option>
+                <option value="date">Gallery</option>
+              </select>
+            </p>
+
             <!-- </div> -->
-            <el-pagination
+            <!-- <el-pagination
               v-if="searchData.limit < searchData.total"
               :small="isMobile"
               :page-size="searchData.limit"
@@ -93,7 +115,7 @@
               :total="searchData.total"
               @current-change="onPaginationPageChange"
               style="width:20%"
-            />
+            /> -->
           </div>
 
           <div class="mb-16">
@@ -180,6 +202,13 @@
                     <button class="apply-btn" @click="applyFilter('authors')">Apply</button>
                   </div>
                 </div>
+                <h3 style="padding-top:10px" class="filter-headers">Category</h3>
+                <div class="dataset-filters__filter-group filtering-section" style="overflow-y: auto;max-height:fit-content">
+                  <input id="category-filter" placeholder="Enter a category" style="width:90%;border-radius: 4px;font-size:14px;background:#fff;border: 1px solid #d5d5d5"></input>
+                  <div style="width: 100%">
+                    <button class="apply-btn" @click="applyFilter('category')">Apply</button>
+                  </div>
+                </div>
                 <!-- <h3 style="padding-top:10px" class="filter-headers">Category</h3>
                 <div class="dataset-filters__filter-group filtering-section">
                   <el-checkbox-group
@@ -199,7 +228,7 @@
               </div>
             </el-col>
             <div style="display: none" id="did-you-mean-div">
-              <p>Did you mean <span @click="this.queryFunction($event.target.innerHTML)" class="did-you-mean-span" id="did-you-mean-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
+              <p>Did you mean <span @click="queryFunction($event.target.innerHTML, 'did-you-mean')" class="did-you-mean-span" id="did-you-mean-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
             </div>
             <el-col
               :sm="searchColSpan('sm')"
@@ -280,6 +309,7 @@ import SearchForm from '@/components/SearchForm/SearchForm.vue'
 import * as http from 'http';
 import Tagify from '@yaireo/tagify'
 import "@yaireo/tagify/dist/tagify.css"
+import SubscribeForm from '@/components/SubscribeForm/SubscribeForm.vue'
 
 const ProjectSearchResults = () =>
   import('@/components/SearchResults/ProjectSearchResults.vue')
@@ -331,6 +361,7 @@ const searchTypes = [
 const advancedSearchOptions = ["Exact match", "here"]
 
 const searchData = {
+  total: 0,
   limit: 10,
   skip: 0,
   items: [],
@@ -384,7 +415,8 @@ export default {
     PageHero,
     SearchFilters,
     SearchForm,
-    PaginationMenu
+    PaginationMenu,
+    SubscribeForm
   },
 
   mixins: [],
@@ -392,6 +424,7 @@ export default {
   data: () => {
     return {
       searchQuery: '',
+      email: '',
       filters: [],
       searchTypes,
       searchData: clone(searchData),
@@ -415,6 +448,7 @@ export default {
       sortBySelect: "ranking",
       tagifyKeywords: {},
       tagifyAuthors: {},
+      tagifyCategory: {},
       autocompleteURL: ""
       // suggestions: []
     }
@@ -559,22 +593,6 @@ export default {
       }
     })
 
-    // const router = new VueRouter({})
-    //
-    // const originalPush = router.push
-    // router.push = function push(location, onResolve, onReject)
-    // {
-    //     if (onResolve || onReject) {
-    //         return originalPush.call(this, location, onResolve, onReject)
-    //     }
-    //     return originalPush.call(this, location).catch((err) => {
-    //         if (VueRouter.isNavigationFailure(err)) {
-    //             return err
-    //         }
-    //         return Promise.reject(err)
-    //     })
-    // }
-
     this.tagifyKeywords = new Tagify(document.getElementById("keywords-filter"), {
         enforceWhitelist: true,
         whitelist: [],
@@ -594,6 +612,49 @@ export default {
           enabled   : 1,
           closeOnSelect : true
         }
+    })
+    this.tagifyCategory = new Tagify(document.getElementById("category-filter"), {
+      enforceWhitelist: true,
+      whitelist: [
+        "reagent targeted gene",
+        "cellular process",
+        "evidence",
+        "anatomical entity",
+        "sequence alteration",
+        "inheritance",
+        "association",
+        "cell",
+        "drug",
+        "cellular component",
+        "clinical_course",
+        "protein",
+        "publication",
+        "phenotypic_marker",
+        "molecular entity",
+        "cell line",
+        "case",
+        "phenotype",
+        "disease",
+        "haplotype",
+        "organism",
+        "gene",
+        "chromosome",
+        "variant locus",
+        "quality",
+        "genotype",
+        "molecular function",
+        "pathway",
+        "biological process",
+        "snv",
+        "dataset",
+        "sequence feature"
+      ],
+      duplicates: false,
+      dropdown : {
+        maxItems: 5,
+        enabled   : 1,
+        closeOnSelect : true
+      }
     })
 
     // this.autocomplete(document.getElementById("myInput"), this.searchData.suggestions);
@@ -663,21 +724,21 @@ export default {
         })
         res.on("end", () => {
           var suggestionArr = JSON.parse(data)
-          console.log(suggestionArr)
-          // var suggestionArr = parsedJSON
-          // this.searchData.suggestions = suggestionArr
           this.autocomplete(document.getElementById("myInput"), suggestionArr)
         })
       })
     },
 
-    queryFunction(query) {
+    queryFunction(query, type) {
       console.log(query)
       if (query !== undefined) {
+        if (type === "did-you-mean") {
+          this.$route.query.q = query;
+          document.getElementById("myInput").value = query
+        }
         this.isLoadingSearch = true
         var url = `http://130.216.216.55/search?query=${query}&force=yes`
         this.sortBySelect = "ranking"
-        // console.log(this.advancedMatch)
         if (this.advancedMatch === "Exact match") {
           url = `http://130.216.216.55/search?query=${query}&force=yes&match=true`
         }
@@ -716,6 +777,10 @@ export default {
               if (this.tagifyKeywords.settings) {
                 this.tagifyKeywords.settings.whitelist = Object.keys(this.searchData.keywords)
               }
+            }
+            if (type === "did-you-mean") {
+              document.getElementById("did-you-mean-div").style.display = "none";
+              document.getElementById("did-you-mean-span").text = ""
             }
             // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
             // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
@@ -804,8 +869,9 @@ export default {
         this.datasetFilters = "Public"
         this.tagifyKeywords.removeAllTags()
         this.tagifyAuthors.removeAllTags()
+        this.tagifyCategory.removeAllTags()
         this.datasetFilters = ['Public']
-        this.queryFunction(this.$route.query.q)
+        this.queryFunction(this.$route.query.q, "")
 
     },
 
@@ -836,9 +902,24 @@ export default {
 
     showAdvancedSearch() {
       if (document.getElementById("div-advanced-search").style.display === "block") {
+        document.getElementById("show-advanced-search-span").style.textDecoration = "none"
         document.getElementById("div-advanced-search").style.display = "none"
       } else {
+        document.getElementById("show-advanced-search-span").style.textDecoration = "underline"
         document.getElementById("div-advanced-search").style.display = "block"
+      }
+    },
+
+    showAlert() {
+      if (document.getElementById("div-advanced-search").style.display === "block") {
+        document.getElementById("div-advanced-search").style.display = "none"
+      }
+      if (document.getElementById("div-create-alerts").style.display === "block") {
+        document.getElementById("create-alerts-span").style.textDecoration = "none"
+        document.getElementById("div-create-alerts").style.display = "none"
+      } else {
+        document.getElementById("create-alerts-span").style.textDecoration = "underline"
+        document.getElementById("div-create-alerts").style.display = "block"
       }
     },
 
@@ -1177,7 +1258,7 @@ export default {
     fetchFromAqua: function() {
       // this.isLoadingSearch = true
       this.searchData.limit = 10
-      this.queryFunction(this.$route.query.q)
+      this.queryFunction(this.$route.query.q, "")
 
       // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
       // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
@@ -1288,8 +1369,47 @@ export default {
       this.$router.replace({ query })
     },
 
+   /**
+     * Submit email
+     */
+    emailConfirm: function() {
+      const re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      if(this.email === ""){
+        alert("Please enter your email")
+      }else if(!re.test(this.email)){
+        //check if the email address is in the right format
+        alert("Your email is not valid")
+      }else{
+        var subscribeInfo = {"email": this.email, "keywords": this.$route.query.q};
+        var postURL = "http://192.168.99.103/notifyme"
+        const data = JSON.stringify(subscribeInfo)
+        const options = {
+          hostname: '192.168.99.103',
+          path: '/notifyme',
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+          }
+        }
+        const req = http.request(options, res => {
+          console.log(res)
+          console.log(`statusCode: ${res.statusCode}`)
+          res.on('data', d => {
+            process.stdout.write(d)
+          })
+        })
+        req.on('error', error => {
+          console.error(error)
+        })
+        req.write(data)
+        req.end()
+        // return subscribeInfo;
+      }
+    },
+
     /**
-     * Submit search
+     * Clear search
      */
     clearSearch: function() {
       this.searchData.skip = 0
@@ -1543,7 +1663,7 @@ export default {
 }
 .search-heading {
   align-items: center;
-  margin-top:30px;
+  margin-top: 0;
   display: flex;
   margin-bottom: 1em;
   justify-content: space-between;
