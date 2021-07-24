@@ -7,14 +7,7 @@
   >
     <el-table-column prop="banner" label="Image" width="160">
       <template slot-scope="scope">
-        <!-- <div>
-          <svg-icon
-            icon="icon-shared-linked"
-            height="25"
-            width="20"
-            dir="left"
-          />
-        </div> -->
+
         <nuxt-link
           :to="{
             name: 'datasets-datasetId',
@@ -25,7 +18,6 @@
           }"
           class="img-dataset"
         >
-
           <img
             :src="scope.row.banner"
             :alt="`Banner for ${scope.row.name}`"
@@ -36,6 +28,7 @@
             Embargoed
           </sparc-pill>
         </nuxt-link>
+
       </template>
     </el-table-column>
     <el-table-column
@@ -82,6 +75,60 @@
             </td>
           </tr>
         </table>
+        <div style="margin-top:15px">
+          <svg version="1.1" id="Capa_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+             width="20px" height="20px" fill="blueviolet" viewBox="0 0 507.45 507.45" style="cursor:pointer;enable-background:new 0 0 507.45 507.45;"
+             xml:space="preserve">
+          <g>
+            <g id="share-alt">
+              <path d="M408,178.5c-20.4,0-38.25,7.65-51,20.4L175.95,94.35c2.55-5.1,2.55-12.75,2.55-17.85C178.5,33.15,145.35,0,102,0
+                S25.5,33.15,25.5,76.5S58.65,153,102,153c20.4,0,38.25-7.65,51-20.4l181.05,104.55c-2.55,5.1-2.55,12.75-2.55,17.85
+                c0,5.1,0,12.75,2.55,17.85L153,379.95c-12.75-12.75-30.6-20.4-51-20.4c-40.8,0-73.95,33.15-73.95,73.95S61.2,507.45,102,507.45
+                s73.95-33.15,73.95-73.95c0-5.1,0-10.2-2.55-17.85L354.45,308.55c12.75,12.75,30.6,20.4,51,20.4c43.35,0,76.5-33.15,76.5-76.5
+                C481.95,209.1,451.35,178.5,408,178.5z"/>
+            </g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          <g>
+          </g>
+          </svg>
+          <!-- <svg-icon
+            icon="icon-share-twitter"
+            height="25"
+            width="25"
+            fill="blueviolet"
+            style="margin-bottom:8px;margin-left: 3px;cursor:pointer;fill:blueviolet"
+          >
+
+          </svg-icon> -->
+        </div>
       </template>
     </el-table-column>
   </el-table>
@@ -218,6 +265,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+@import '../../assets/_variables.scss';
 .el-table {
   width: 100%;
 }

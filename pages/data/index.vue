@@ -887,7 +887,7 @@ export default {
             // document.getElementById("row-name").append(htmlObject)
           }
           if (Object.keys(item["highlight"]).includes("description")) {
-            var desc = item["highlight"]["description"][0]
+            var desc = item["highlight"]["description"][0] + "... <span style='text-decoration:underline;color:blueviolet;cursor:pointer'>See more</span>"
             // var htmlObject = document.createElement('p');
             // htmlObject.innerHTML = desc;
             // item.desc = htmlObject
@@ -1381,10 +1381,10 @@ export default {
         alert("Your email is not valid")
       }else{
         var subscribeInfo = {"email": this.email, "keywords": this.$route.query.q};
-        var postURL = "http://192.168.99.103/notifyme"
+        var postURL = "http://130.216.216.55/notifyme"
         const data = JSON.stringify(subscribeInfo)
         const options = {
-          hostname: '192.168.99.103',
+          hostname: '130.216.216.55',
           path: '/notifyme',
           method: 'POST',
           headers: {
