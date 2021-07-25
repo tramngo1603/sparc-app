@@ -227,6 +227,10 @@
               </div>
               </div>
             </el-col>
+            <div style="display: none;margin-left:27%" id="showing-results-div">
+              <p style="margin-bottom: 0;">Showing results for <span class="did-you-mean-span" id="showing-results-span" style="font-weight:600; cursor: pointer;text-decoration:none"></span><span class="did-you-mean-span" id="result-number" style="text-decoration:none"></span></p>
+              <p>Search instead for <span @click="queryFunction(this.$route.query.q, 'did-you-mean')" class="did-you-mean-span" id="exact-query-instead-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
+            </div>
             <div style="display: none" id="did-you-mean-div">
               <p>Did you mean <span @click="queryFunction($event.target.innerHTML, 'did-you-mean')" class="did-you-mean-span" id="did-you-mean-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
             </div>
@@ -449,7 +453,8 @@ export default {
       tagifyKeywords: {},
       tagifyAuthors: {},
       tagifyCategory: {},
-      autocompleteURL: ""
+      autocompleteURL: "",
+      queryKeyword: "",
       // suggestions: []
     }
   },
@@ -587,7 +592,7 @@ export default {
    */
   mounted: function() {
 
-    document.getElementById("myInput").addEventListener('input', () => {
+    document.getElementById("myInput").addEventListener('keyup', () => {
       if (document.getElementById("myInput").value.length > 3) {
         this.getSuggestedWords(document.getElementById("myInput").value)
       }
@@ -730,17 +735,20 @@ export default {
     },
 
     queryFunction(query, type) {
-      console.log(query)
-      if (query !== undefined) {
+      // console.log(query)
+      if (query && query !== "undefined") {
         if (type === "did-you-mean") {
           this.$route.query.q = query;
           document.getElementById("myInput").value = query
+        } else {
+          this.$route.query.q = document.getElementById("myInput").value
+          query = this.$route.query.q
         }
         this.isLoadingSearch = true
-        var url = `http://130.216.216.55/search?query=${query}&force=yes`
+        var url = `http://130.216.216.55/search?query=${query}`
         this.sortBySelect = "ranking"
         if (this.advancedMatch === "Exact match") {
-          url = `http://130.216.216.55/search?query=${query}&force=yes&match=true`
+          url = `http://130.216.216.55/search?query=${query}&match=true`
         }
         const req = http.get(url, res => {
           let data = "";
@@ -751,7 +759,8 @@ export default {
           res.on("end", () => {
             var parsedJSON = JSON.parse(data)
             if (Object.keys(parsedJSON.hits).length === 0) {
-              if (parsedJSON["suggestions"][0]) {
+              if (parsedJSON["suggestions"][0] && query !== "undefined" && query) {
+                console.log(parsedJSON)
                 document.getElementById("did-you-mean-div").style.display = "block"
                 document.getElementById("did-you-mean-span").textContent = parsedJSON["suggestions"][0]
                 var itemsArr = this.returnItems(parsedJSON)
@@ -765,10 +774,21 @@ export default {
               var suggestionArr = parsedJSON["suggestions"]
               this.searchData.responseData = parsedJSON
               this.searchData.suggestions = suggestionArr
+              this.searchData.total = itemsArr.length
+              if (parsedJSON["executed"] !== parsedJSON["query"]) {
+                console.log(parsedJSON["executed"])
+                document.getElementById("showing-results-div").style.display = "block"
+                document.getElementById("showing-results-span").textContent = parsedJSON["executed"]
+                document.getElementById("result-number").textContent = " (" + this.searchData.total + " results):"
+                document.getElementById("exact-query-instead-span").textContent = parsedJSON["query"]
+              } else {
+                document.getElementById("showing-results-div").style.display = "none"
+              }
+
               this.highlightProcess(itemsArr)
               this.searchData.keywords = keywordArr
               this.searchData.authors = authorArr
-              this.searchData.total = itemsArr.length
+
               this.isLoadingSearch = false
 
               if (this.tagifyAuthors.settings) {
@@ -778,21 +798,20 @@ export default {
                 this.tagifyKeywords.settings.whitelist = Object.keys(this.searchData.keywords)
               }
             }
+
             if (type === "did-you-mean") {
               document.getElementById("did-you-mean-div").style.display = "none";
               document.getElementById("did-you-mean-span").text = ""
             }
-            // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
-            // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
-            // {"id":12345, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
-            // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'}]
           })
         })
 
         req.on('error', error => {
           console.error(error)
+          this.isLoadingSearch = false
         })
         req.end()
+        // this.isLoadingSearch = false
       }
     },
 
@@ -881,23 +900,15 @@ export default {
         if (Object.keys(item).includes("highlight")) {
           if (Object.keys(item["highlight"]).includes("name")) {
             var name = item["highlight"]["name"][0]
-            // var htmlObject = document.createElement('p');
-            // htmlObject.innerHTML = name;
             item.name = name
-            // document.getElementById("row-name").append(htmlObject)
           }
           if (Object.keys(item["highlight"]).includes("description")) {
             var desc = item["highlight"]["description"][0] + "... <span style='text-decoration:underline;color:blueviolet;cursor:pointer'>See more</span>"
-            // var htmlObject = document.createElement('p');
-            // htmlObject.innerHTML = desc;
-            // item.desc = htmlObject
             item.description = desc
-            // document.getElementById("row-description").append(htmlObject)
           }
         }
       }
       this.searchData.items = itemsArray
-      // return itemsArray
     },
 
     showAdvancedSearch() {
@@ -1000,7 +1011,9 @@ export default {
       // var arr = suggestedArr
       /*execute a function when someone writes in the text field:*/
       inp.addEventListener("input", function(e) {
-          var a, b, i, val = this.value;
+          var a, b, i = this.value;
+          var val = this.value;
+          // console.log(val)
           /*close any already open lists of autocompleted values*/
           closeAllLists();
           if (!val) { return false;}
@@ -1026,6 +1039,8 @@ export default {
                   b.addEventListener("click", function(e) {
                   /*insert the value for the autocomplete text field:*/
                   inp.value = this.getElementsByTagName("input")[0].value;
+                  inp.text = this.getElementsByTagName("input")[0].value;
+                  // queryKeyword = inp.value
                   /*close the list of autocompleted values,
                   (or any other open lists of autocompleted values:*/
                   closeAllLists();
@@ -1033,6 +1048,7 @@ export default {
               a.appendChild(b);
             }
           }
+
       });
       /*execute a function presses a key on the keyboard:*/
       inp.addEventListener("keyup", function(e) {
@@ -1258,7 +1274,8 @@ export default {
     fetchFromAqua: function() {
       // this.isLoadingSearch = true
       this.searchData.limit = 10
-      this.queryFunction(this.$route.query.q, "")
+      this.$route.query.q = document.getElementById("myInput").value
+      this.queryFunction(document.getElementById("myInput").value, "")
 
       // this.searchData.items = [{"id":1234, "banner": "https://raw.githubusercontent.com/SPARC-FAIR-Codeathon/aqua/main/src/assets/images/logo_aqua-1.jpg", "name":"mock dataset", "embargo": true,
       // "description": "my description", "doi": "doi-12345", "createdAt": '2021-07-19T10:23:08.933087', "updatedAt": '2021-07-19T10:23:08.933087'},
@@ -1365,6 +1382,7 @@ export default {
      */
     submitSearch: function() {
       this.searchData.skip = 0
+      this.searchQuery = document.getElementById("myInput").value
       const query = mergeLeft({ q: this.searchQuery }, this.$route.query)
       this.$router.replace({ query })
     },
