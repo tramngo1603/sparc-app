@@ -229,7 +229,7 @@
             </el-col>
             <div style="display: none;margin-left:27%" id="showing-results-div">
               <p style="margin-bottom: 0;">Showing results for <span class="did-you-mean-span" id="showing-results-span" style="font-weight:600; cursor: pointer;text-decoration:none"></span><span class="did-you-mean-span" id="result-number" style="text-decoration:none"></span></p>
-              <p>Search instead for <span @click="queryFunction(this.$route.query.q, 'did-you-mean')" class="did-you-mean-span" id="exact-query-instead-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
+              <p>Search instead for <span @click="queryFunction($event.target.innerHTML, 'search-instead')" class="did-you-mean-span" id="exact-query-instead-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
             </div>
             <div style="display: none" id="did-you-mean-div">
               <p>Did you mean <span @click="queryFunction($event.target.innerHTML, 'did-you-mean')" class="did-you-mean-span" id="did-you-mean-span" style="font-weight:600; font-style: italic;cursor: pointer"></span>?</p>
@@ -740,6 +740,9 @@ export default {
         if (type === "did-you-mean") {
           this.$route.query.q = query;
           document.getElementById("myInput").value = query
+        } else if (type === "search-instead") {
+          this.$route.query.q = document.getElementById("showing-results-span").textContent
+          query = document.getElementById("showing-results-span").textContent
         } else {
           this.$route.query.q = document.getElementById("myInput").value
           query = this.$route.query.q
@@ -748,6 +751,9 @@ export default {
         var url = `http://130.216.216.55/search?query=${query}`
         this.sortBySelect = "ranking"
         if (this.advancedMatch === "Exact match") {
+          url = `http://130.216.216.55/search?query=${query}&match=true`
+        }
+        if (type === "search-instead") {
           url = `http://130.216.216.55/search?query=${query}&match=true`
         }
         const req = http.get(url, res => {
