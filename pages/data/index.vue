@@ -960,7 +960,7 @@ export default {
           var publishedDate = this.searchData.responseData.hits[ele]["firstPublishedAt"]
           var boolean = this.olderThanCriteria(type, publishedDate)
           if (boolean) {
-            itemsArr.push(ele)
+            itemsArr.push(this.searchData.responseData.hits[ele])
           }
         }
         this.searchData.items = itemsArr
